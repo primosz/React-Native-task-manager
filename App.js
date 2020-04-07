@@ -1,4 +1,5 @@
 import React, { useState, Component } from 'react';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import {
     StyleSheet,
     Text,
@@ -55,8 +56,11 @@ export default class App extends Component {
             style={styles.rowFront}
             underlayColor={'#AAA'}
         >
-            <View>
-                <Text>I am {data.item.name}, my status is {data.item.status}</Text>
+            <View style = {styles.container2}>
+              <Text style={styles.icon}><Icon name="user-circle" color="#CCC" size={30}  /></Text>
+                <Text style={styles.text}>                   
+                    I am {data.item.name}, my status is {data.item.status}
+                </Text>
             </View>
         </TouchableHighlight>
     );
@@ -106,14 +110,26 @@ export default class App extends Component {
 const styles = StyleSheet.create({
     container: {
         backgroundColor: 'white',
-        flex: 1,
+        flex: 1
+    },
+    container2: {
+      flex: 1,
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: "center",
+      justifyContent: 'center',
+      width: '100%'
+    },
+    text: {
+        fontFamily: 'Roboto' ,
+        fontWeight: '900'     
     },
     backTextWhite: {
         color: '#FFF',
     },
     rowFront: {
         alignItems: 'center',
-        backgroundColor: '#CCC',
+        backgroundColor: '#FFF',
         borderBottomColor: 'black',
         borderBottomWidth: 1,
         justifyContent: 'center',
@@ -152,4 +168,11 @@ const styles = StyleSheet.create({
         top: 0,
         width: 75
     },
+    icon: {
+      margin:10,
+      alignSelf: "flex-start",
+      position: 'absolute',
+      top: 0,
+      left: 0
+    }
 });
