@@ -6,6 +6,8 @@ import {
     TouchableOpacity,
     TouchableHighlight,
     View,
+    Modal,
+    TextInput
 } from 'react-native';
 
 import { SwipeListView } from 'react-native-swipe-list-view';
@@ -13,18 +15,27 @@ import { SwipeListView } from 'react-native-swipe-list-view';
 export default class App extends Component {
     state={
        listData : new Array(
-         {key: 1, name: 'Zadanie 1', status: 'To do'},
-         {key: 2, name: 'Zadanie 2', status: 'To do'},
-         {key: 3, name: 'Zadanie 3', status: 'Done'},
-         {key: 4, name: 'Zadanie 4', status: 'To do'},
-         {key: 5, name: 'Zadanie 5', status: 'To do'},
-         {key: 6, name: 'Zadanie 6', status: 'To do'},
-         {key: 7, name: 'Zadanie 7', status: 'To do'}
-      )
-          };
+         {key: 1, name: 'Zadanie 1', status: 'To do', cat: 'Reminder', date: '10/04/20'},
+         {key: 2, name: 'Zadanie 2', status: 'To do', cat: 'Reminder', date: '10/04/20'},
+         {key: 3, name: 'Zadanie 3', status: 'Done', cat: 'Meeting', date: '10/04/20'},
+         {key: 4, name: 'Zadanie 4', status: 'To do', cat: 'Reminder', date: '10/04/20'},
+         {key: 5, name: 'Zadanie 5', status: 'To do', cat: 'Assignment', date: '10/04/20'},
+         {key: 6, name: 'Zadanie 6', status: 'To do', cat: 'Reminder', date: '10/04/20'},
+         {key: 7, name: 'Zadanie 7', status: 'To do', cat: 'Reminder', date: '10/04/20'}
+      ),
+      modalVisible: false,
+      currentElem: {key: 1, name: 'Zadanie 1', status: 'To do', cat: 'Reminder', date: '10/04/20'}
+        };
     
 
-     handleCloseRow = (rowMap, rowKey) => {
+    setModalVisible = (visible, currentElIndex) => {
+        this.setState({
+            modalVisible: visible,
+            currentElem: this.getElemData(currentElIndex)
+        });
+    }
+
+    handleCloseRow = (rowMap, rowKey) => {
         if (rowMap[rowKey]) {
             rowMap[rowKey].closeRow();
         }
@@ -50,14 +61,51 @@ export default class App extends Component {
         console.log('This row opened', rowKey);
     };
 
+    getElemData = (key) => {
+        const index = this.state.listData.findIndex(item => item.key === key);
+        return this.state.listData[index];
+    };
+
+     onChangeNameInput = (event) => {
+         let changedElem = this.state.currentElem;
+         changedElem.name = event
+        this.setState({
+             currentElem: changedElem
+         })
+     }
+
+     onChangeStatusInput = (event) => {
+         let changedElem = this.state.currentElem;
+         changedElem.status = event
+         this.setState({
+             currentElem: changedElem
+         })
+     }
+
+    onChangeDateInput = (event) => {
+         let changedElem = this.state.currentElem;
+         changedElem.date = event
+         this.setState({
+             currentElem: changedElem
+         })
+     }
+
+    onChangeCatInput = (event) => {
+         let changedElem = this.state.currentElem;
+         changedElem.cat = event
+         this.setState({
+             currentElem: changedElem
+         })
+     }
+
      renderItem = data => (
         <TouchableHighlight
-            onPress={() => console.log('You touched me')}
+            onPress={() => this.setModalVisible(true, data.item.key)}
             style={styles.rowFront}
             underlayColor={'#AAA'}
         >
             <View style = {styles.container2}>
-              <Text style={styles.icon}><Icon name="user-circle" color="#CCC" size={30}  /></Text>
+              <Text style={styles.icon}><Icon name="book" color="#606060" size={30}  /></Text>
                 <Text style={styles.text}>                   
                     I am {data.item.name}, my status is {data.item.status}
                 </Text>
@@ -89,8 +137,63 @@ export default class App extends Component {
     );
 
     render(){
+    const { modalVisible } = this.state;
       return (
         <View style={styles.container}>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={modalVisible}
+                onRequestClose={() => {
+                    Alert.alert("Modal has been closed.");
+                }}
+                >
+            <View style={styles.centeredView}>
+                <View style={styles.modalView}>
+                    <Text style={styles.modalText}>Name</Text>
+                    <TextInput
+                        value={this.state.currentElem.name}
+                        style={styles.input}
+                        onChangeText={(this.onChangeNameInput)}
+                        underlineColorAndroid = 'blue'
+                        selectionColor = 'blue'
+                        />
+                    <Text style={styles.modalText}>Status</Text>
+                    <TextInput
+                        value={this.state.currentElem.status}
+                        style={styles.input}
+                        onChangeText={this.onChangeStatusInput}
+                        underlineColorAndroid = 'blue'
+                        selectionColor = 'blue'
+                        />
+                    <Text style={styles.modalText}>Due Date</Text>
+                    <TextInput
+                        value={this.state.currentElem.date}
+                        style={styles.input}
+                        onChangeText={this.onChangeDateInput}
+                        underlineColorAndroid = 'blue'
+                        selectionColor = 'blue'
+                        />
+                    <Text style={styles.modalText}>Category</Text>
+                    <TextInput
+                        value={this.state.currentElem.cat}
+                        style={styles.input}
+                        onChangeText={this.onChangeCatInput}
+                        underlineColorAndroid = 'blue'
+                        selectionColor = 'blue'
+                        />
+                    <TouchableHighlight
+                        style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
+                        onPress={() => {
+                        this.setModalVisible(!modalVisible, 1);
+                        }}
+                    >
+                        <Text style={styles.textStyle}>Hide Modal</Text>
+                    </TouchableHighlight>
+                </View>
+            </View>
+            </Modal>
+
             <SwipeListView
                 data={this.state.listData}
                 renderItem={this.renderItem}
@@ -173,6 +276,39 @@ const styles = StyleSheet.create({
       alignSelf: "flex-start",
       position: 'absolute',
       top: 0,
-      left: 0
-    }
+      left: 10
+    },
+    modalView: {
+        margin: 20,
+        backgroundColor: "white",
+        borderRadius: 20,
+        padding: 35,
+        alignItems: "center",
+        shadowColor: "#000",
+        shadowOffset: {
+        width: 0,
+        height: 2
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5
+  },
+  openButton: {
+        backgroundColor: "#F194FF",
+        borderRadius: 20,
+        padding: 10,
+        elevation: 2
+  },
+  textStyle: {
+        color: "white",
+        fontWeight: "bold",
+        textAlign: "center"
+    },
+    input: {
+        fontWeight: 'bold'
+    },
+  modalText: {
+        marginBottom: 0,
+        textAlign: "center"
+  }
 });
