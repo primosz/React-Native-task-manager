@@ -7,7 +7,8 @@ import {
     TouchableHighlight,
     View,
     Modal,
-    TextInput
+    TextInput,
+    Picker
 } from 'react-native';
 
 import { SwipeListView } from 'react-native-swipe-list-view';
@@ -33,6 +34,14 @@ export default class App extends Component {
             modalVisible: visible,
             currentElem: this.getElemData(currentElIndex)
         });
+    }
+
+    save = () => {        
+        let changedList = [...this.state.listData];
+        const prevIndex = this.state.listData.findIndex(item => item.key === this.state.currentElem.key);
+        changedList[prevIndex] = this.state.currentElem;
+        this.setState({listData: changedList});
+        this.setModalVisible(false, 1);
     }
 
     handleCloseRow = (rowMap, rowKey) => {
@@ -74,9 +83,9 @@ export default class App extends Component {
          })
      }
 
-     onChangeStatusInput = (event) => {
+     onStatusChange = (itemValue, itemIndex) => {
          let changedElem = this.state.currentElem;
-         changedElem.status = event
+         changedElem.status = itemValue;
          this.setState({
              currentElem: changedElem
          })
@@ -90,13 +99,13 @@ export default class App extends Component {
          })
      }
 
-    onChangeCatInput = (event) => {
-         let changedElem = this.state.currentElem;
-         changedElem.cat = event
-         this.setState({
-             currentElem: changedElem
-         })
-     }
+   onCatChange = (itemValue, itemIndex) => {
+       let changedElem = this.state.currentElem;
+       changedElem.cat = itemValue;
+       this.setState({
+           currentElem: changedElem
+       })
+   }
 
      renderItem = data => (
         <TouchableHighlight
@@ -159,13 +168,13 @@ export default class App extends Component {
                         selectionColor = 'blue'
                         />
                     <Text style={styles.modalText}>Status</Text>
-                    <TextInput
-                        value={this.state.currentElem.status}
-                        style={styles.input}
-                        onChangeText={this.onChangeStatusInput}
-                        underlineColorAndroid = 'blue'
-                        selectionColor = 'blue'
-                        />
+                     <Picker
+                        style={styles.picker}
+                        selectedValue={this.state.currentElem.status}
+                        onValueChange={(itemValue, itemIndex) => this.onStatusChange(itemValue, itemIndex)}>
+                            <Picker.Item label="To Do" value="To do" />
+                            <Picker.Item label="Done" value="Done" />
+                    </Picker>
                     <Text style={styles.modalText}>Due Date</Text>
                     <TextInput
                         value={this.state.currentElem.date}
@@ -175,20 +184,21 @@ export default class App extends Component {
                         selectionColor = 'blue'
                         />
                     <Text style={styles.modalText}>Category</Text>
-                    <TextInput
-                        value={this.state.currentElem.cat}
-                        style={styles.input}
-                        onChangeText={this.onChangeCatInput}
-                        underlineColorAndroid = 'blue'
-                        selectionColor = 'blue'
-                        />
+                    <Picker
+                        style={styles.picker}
+                        selectedValue={this.state.currentElem.cat}
+                        onValueChange={(itemValue, itemIndex) => this.onCatChange(itemValue, itemIndex)}>
+                            <Picker.Item label="Reminder" value="Reminder" />
+                            <Picker.Item label="Meeting" value="Meeting" />
+                            <Picker.Item label="Assignment" value="Assignment" />
+                    </Picker>
                     <TouchableHighlight
                         style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
                         onPress={() => {
-                        this.setModalVisible(!modalVisible, 1);
+                        this.save();
                         }}
                     >
-                        <Text style={styles.textStyle}>Hide Modal</Text>
+                        <Text style={styles.textStyle}>Save</Text>
                     </TouchableHighlight>
                 </View>
             </View>
@@ -306,6 +316,11 @@ const styles = StyleSheet.create({
     },
     input: {
         fontWeight: 'bold'
+    },
+    picker: {
+        margin: 30,
+        fontSize: 30,
+        width: '50%'
     },
   modalText: {
         marginBottom: 0,
