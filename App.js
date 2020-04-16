@@ -1,5 +1,7 @@
 import React, { useState, Component } from 'react';
+import DatePicker from 'react-native-datepicker'
 import Icon from 'react-native-vector-icons/FontAwesome';
+import ToolbarAndroid from '@react-native-community/toolbar-android';
 import {
     StyleSheet,
     Text,
@@ -16,24 +18,41 @@ import { SwipeListView } from 'react-native-swipe-list-view';
 export default class App extends Component {
     state={
        listData : new Array(
-         {key: 1, name: 'Zadanie 1', status: 'To do', cat: 'Reminder', date: '10/04/20'},
-         {key: 2, name: 'Zadanie 2', status: 'To do', cat: 'Reminder', date: '10/04/20'},
-         {key: 3, name: 'Zadanie 3', status: 'Done', cat: 'Meeting', date: '10/04/20'},
-         {key: 4, name: 'Zadanie 4', status: 'To do', cat: 'Reminder', date: '10/04/20'},
-         {key: 5, name: 'Zadanie 5', status: 'To do', cat: 'Assignment', date: '10/04/20'},
-         {key: 6, name: 'Zadanie 6', status: 'To do', cat: 'Reminder', date: '10/04/20'},
-         {key: 7, name: 'Zadanie 7', status: 'To do', cat: 'Reminder', date: '10/04/20'}
+         {key: 1, name: 'Zadanie 1', desc: 'Description', status: 'Not done', cat: "Reminder", date: '2020-10-04'},
+         {key: 2, name: 'Zadanie 2', desc: 'Description', status: 'Not done', cat: "Phone", date: '2020-10-04'},
+         {key: 3, name: 'Zadanie 3', desc: 'Description', status: 'Done', cat: 'Meeting', date: '2020-10-04'},
+         {key: 4, name: 'Zadanie 4', desc: 'Description', status: 'Not done', cat: 'Reminder', date: '2020-10-04'},
+         {key: 5, name: 'Zadanie 5', desc: 'Description', status: 'Not done', cat: 'Assignment', date: '2020-10-04'},
+         {key: 6, name: 'Zadanie 6', desc: 'Description', status: 'Not done', cat: 'Reminder', date: '2020-10-04'},
+         {key: 7, name: 'Zadanie 7', desc: 'Description', status: 'Not done', cat: 'Reminder', date: '2020-10-04'}
       ),
       modalVisible: false,
-      currentElem: {key: 1, name: 'Zadanie 1', status: 'To do', cat: 'Reminder', date: '10/04/20'}
+      currentElem: {key: 1, name: 'Zadanie 1', status: 'Not done', cat: 'Reminder', date: '10/04/20'},
+      addMode: false 
         };
     
 
-    setModalVisible = (visible, currentElIndex) => {
+    setModalVisible = (visible, currentElIndex, addingMode) => {
+        if(addingMode){
+            let newElem = {
+                key: null,
+                name: '',
+                status: 'To do',
+                cat: 'Reminder',
+                date: '10/04/20'
+            }
+            this.setState({
+                modalVisible: true,
+                currentElem: newElem,
+                addMode: true
+            });
+        }
+        else{
         this.setState({
             modalVisible: visible,
             currentElem: this.getElemData(currentElIndex)
         });
+        }
     }
 
     save = () => {        
@@ -41,7 +60,19 @@ export default class App extends Component {
         const prevIndex = this.state.listData.findIndex(item => item.key === this.state.currentElem.key);
         changedList[prevIndex] = this.state.currentElem;
         this.setState({listData: changedList});
-        this.setModalVisible(false, 1);
+        this.setModalVisible(false, 1, false);
+    }
+
+    addNewElem = () => {        
+        if(this.state.currentElem.name.length>0){
+            let changedList = [...this.state.listData];
+            const newIndex = changedList[changedList.length - 1].key+1;
+            this.state.currentElem.key = newIndex;
+            changedList.push(this.state.currentElem);
+            this.setState({listData: changedList, addMode: false});
+            this.setModalVisible(false, 1, false);
+        }
+        else alert('Provide a name for task!');
     }
 
     handleCloseRow = (rowMap, rowKey) => {
@@ -83,6 +114,14 @@ export default class App extends Component {
          })
      }
 
+     onChangeDescInput = (event) => {
+         let changedElem = this.state.currentElem;
+         changedElem.desc = event
+         this.setState({
+             currentElem: changedElem
+         })
+     }
+
      onStatusChange = (itemValue, itemIndex) => {
          let changedElem = this.state.currentElem;
          changedElem.status = itemValue;
@@ -107,16 +146,33 @@ export default class App extends Component {
        })
    }
 
+   getIcon = (cat) => {
+    switch (cat) {
+        case "Phone":
+            return "phone";
+        case "Reminder":
+            return "calendar";
+        case "Meeting":
+            return "group";
+        case "Assignment":
+            return "bar-chart";
+        case "To do":
+            return "pencil";
+        default:
+            return "none"
+        }
+   }
+
      renderItem = data => (
         <TouchableHighlight
-            onPress={() => this.setModalVisible(true, data.item.key)}
+            onPress={() => this.setModalVisible(true, data.item.key, false)}
             style={styles.rowFront}
             underlayColor={'#AAA'}
         >
             <View style = {styles.container2}>
-              <Text style={styles.icon}><Icon name="book" color="#606060" size={30}  /></Text>
+              <Text style={styles.icon}><Icon name={this.getIcon(data.item.cat)} color="#606060" size={30}  /></Text>
                 <Text style={styles.text}>                   
-                    I am {data.item.name}, my status is {data.item.status}
+                    {data.item.name}, {data.item.date},  {data.item.status}
                 </Text>
             </View>
         </TouchableHighlight>
@@ -148,13 +204,25 @@ export default class App extends Component {
     render(){
     const { modalVisible } = this.state;
       return (
+        
         <View style={styles.container}>
+            <ToolbarAndroid                
+                title="Task Manager"
+                style={styles.toolbar}
+                actions={[
+                    {title: 'Button', icon: require('./add.png'), show: 'always'},
+                ]}                
+                onActionSelected={() => this.setModalVisible(true, 0, true)}
+          
+             />
             <Modal
                 animationType="slide"
                 transparent={true}
                 visible={modalVisible}
                 onRequestClose={() => {
-                    Alert.alert("Modal has been closed.");
+                    this.setModalVisible(false, 1, false);
+                    this.setState({addMode: false});
+                    console.log("Modal has been closed.");
                 }}
                 >
             <View style={styles.centeredView}>
@@ -167,22 +235,47 @@ export default class App extends Component {
                         underlineColorAndroid = 'blue'
                         selectionColor = 'blue'
                         />
+                     <Text style={styles.modalText}>Description</Text>
+                    <TextInput
+                        value={this.state.currentElem.desc}
+                        style={styles.input}
+                        onChangeText={(this.onChangeDescInput)}
+                        underlineColorAndroid = 'green'
+                        selectionColor = 'green'
+                        multiline={true}
+                        />
                     <Text style={styles.modalText}>Status</Text>
                      <Picker
                         style={styles.picker}
                         selectedValue={this.state.currentElem.status}
                         onValueChange={(itemValue, itemIndex) => this.onStatusChange(itemValue, itemIndex)}>
-                            <Picker.Item label="To Do" value="To do" />
+                            <Picker.Item label="Not done" value="Not done" />
                             <Picker.Item label="Done" value="Done" />
                     </Picker>
                     <Text style={styles.modalText}>Due Date</Text>
-                    <TextInput
-                        value={this.state.currentElem.date}
-                        style={styles.input}
-                        onChangeText={this.onChangeDateInput}
-                        underlineColorAndroid = 'blue'
-                        selectionColor = 'blue'
-                        />
+                    <DatePicker
+                        style={{width: 200}}
+                        date={this.state.currentElem.date}
+                        mode="date"
+                        placeholder="Select date"
+                        format="YYYY-MM-DD"
+                        minDate="2020-01-01"
+                        maxDate="2021-12-31"
+                        confirmBtnText="Confirm"
+                        cancelBtnText="Cancel"
+                        customStyles={{
+                        dateIcon: {
+                            position: 'absolute',
+                            left: -4,
+                            top: 4,
+                            marginLeft: 0
+                        },
+                        dateInput: {
+                            marginLeft: -10
+                        }
+                        }}
+                        onDateChange={this.onChangeDateInput}
+                    />
                     <Text style={styles.modalText}>Category</Text>
                     <Picker
                         style={styles.picker}
@@ -191,15 +284,26 @@ export default class App extends Component {
                             <Picker.Item label="Reminder" value="Reminder" />
                             <Picker.Item label="Meeting" value="Meeting" />
                             <Picker.Item label="Assignment" value="Assignment" />
+                            <Picker.Item label="To do" value="To do" />
+                            <Picker.Item label="Phone" value="Phone" />
                     </Picker>
-                    <TouchableHighlight
-                        style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
+                    {!this.state.addMode ? <TouchableHighlight
+                        style={{ ...styles.openButton }}
                         onPress={() => {
                         this.save();
                         }}
                     >
-                        <Text style={styles.textStyle}>Save</Text>
-                    </TouchableHighlight>
+                        <Text style={styles.textStyle}>Save</Text>                        
+                    </TouchableHighlight> : null}
+                    {this.state.addMode ? <TouchableHighlight
+                        visible = {false}
+                        style={{ ...styles.openButton }}
+                        onPress={() => {
+                        this.addNewElem();
+                        }}
+                    >
+                        <Text style={styles.textStyle}>Add</Text>                 
+                    </TouchableHighlight> : null}
                 </View>
             </View>
             </Modal>
@@ -307,7 +411,9 @@ const styles = StyleSheet.create({
         backgroundColor: "#F194FF",
         borderRadius: 20,
         padding: 10,
-        elevation: 2
+        elevation: 2,
+        backgroundColor: "#2196F3",
+          width: "50%"
   },
   textStyle: {
         color: "white",
@@ -318,12 +424,24 @@ const styles = StyleSheet.create({
         fontWeight: 'bold'
     },
     picker: {
-        margin: 30,
+        marginHorizontal: 30,
+        marginBottom: 10,
         fontSize: 30,
         width: '50%'
     },
+    toolbar: {
+        backgroundColor: '#00ccff',
+        height: 56,
+        display: 'flex',
+        justifyContent: 'flex-end'
+    },
   modalText: {
         marginBottom: 0,
+        marginTop: 25,
         textAlign: "center"
+  },
+  tbIcon: {
+      position: 'absolute',
+      right: 0
   }
 });
