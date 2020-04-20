@@ -1,6 +1,6 @@
 # Task Manager
 
-[![N|Solid](https://im2.ezgif.com/tmp/ezgif-2-7c951913372c.gif)]()
+[![N|Solid](https://imgur.com/rX0NOAP)]()
 # Description
 React Native 
 
