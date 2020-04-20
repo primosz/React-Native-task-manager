@@ -1,6 +1,6 @@
 # Task Manager
 
-[![N|Solid](https://imgur.com/rX0NOAP)]()
+[![N|Solid](https://i.imgur.com/rX0NOAP.gif)]()
 # Description
 React Native 
 
